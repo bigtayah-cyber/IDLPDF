@@ -1,0 +1,9 @@
+node_modules/
+.assets/
+.fonts/
+out/
+dist-electron/
+android/
+ios/
+www/lib/
+www/fonts/*.woff2

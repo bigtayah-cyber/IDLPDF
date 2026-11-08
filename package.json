@@ -1,0 +1,82 @@
+{
+  "name": "ateliers",
+  "productName": "Ateliers",
+  "version": "1.0.0",
+  "description": "La suite locale : PDF, médias, vidéos de paroles et pixel art.",
+  "main": "electron/main.js",
+  "author": "Ateliers",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/ios": "^6.1.2",
+    "@capacitor/app": "^6.0.1",
+    "@capacitor/filesystem": "^6.0.1",
+    "@capacitor/share": "^6.0.2",
+    "@capacitor/assets": "^3.0.5"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "fr.ateliers.suite",
+    "productName": "Ateliers",
+    "files": [
+      "electron/**",
+      "www/**",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist-electron"
+    },
+    "fileAssociations": [
+      {
+        "ext": "pdf",
+        "name": "Document PDF",
+        "role": "Editor"
+      },
+      {
+        "ext": "pixelcrypte",
+        "name": "Projet Pixel Crypte",
+        "role": "Editor"
+      },
+      {
+        "ext": "lyricdrop",
+        "name": "Projet LyricDrop",
+        "role": "Editor"
+      }
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.productivity",
+      "extendInfo": {
+        "NSCameraUsageDescription": "Le scanner de documents utilise la caméra.",
+        "NSMicrophoneUsageDescription": "Utilisé seulement si vous enregistrez du son."
+      }
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Ateliers"
+    }
+  }
+}

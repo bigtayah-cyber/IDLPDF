@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<link rel="stylesheet" href="fonts/suite.css"><script>window.SUITE_LIB_BASE="lib/";</script><script src="brand-global.js"></script><script src="fileimport.js"></script><script src="android-bridge.js" defer></script><link rel="icon" href="icon.png">
+</head>
+<body>
+<title>Ateliers</title>
+<style>
+/* Ateliers : écran titre interactif + launcher de la suite. Même famille que les apps : Archivo large, IBM Plex Mono, cadres de visée. */
+:root{
+  color-scheme:dark;
+  --bg:#0b0b0d;--bg2:#121215;--fg:#f2f1ec;--muted:#8b8a90;--line:rgba(242,241,236,.1);--line2:rgba(242,241,236,.26);
+  --pdf:#e5484d;--mill:#2b3dff;--lyric:#ff5a1f;--pixel:#e8b04a;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;--f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:var(--f-body);-webkit-font-smoothing:antialiased;overflow:hidden;user-select:none}
+#field{position:fixed;inset:0;width:100%;height:100%;display:block}
+.mono{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.dim{color:var(--muted)}
+/* barre de titre macOS (fenêtre sans cadre) */
+.drag{position:fixed;inset:0 0 auto;height:38px;-webkit-app-region:drag;z-index:5}
+body.mac .top{padding-left:84px}
+.top{position:fixed;inset:0 0 auto;z-index:6;display:flex;align-items:center;gap:14px;height:44px;padding:0 20px;pointer-events:none}
+.top .sp{flex:1}
+.top .mono{transition:opacity .6s var(--ease)}
+/* cadres de visée */
+.c{position:absolute;width:10px;height:10px;border:0 solid var(--line2);pointer-events:none}
+.c.tl{top:-1px;left:-1px;border-top-width:1px;border-left-width:1px;--dx:-12px;--dy:-12px}
+.c.tr{top:-1px;right:-1px;border-top-width:1px;border-right-width:1px;--dx:12px;--dy:-12px}
+.c.bl{bottom:-1px;left:-1px;border-bottom-width:1px;border-left-width:1px;--dx:-12px;--dy:12px}
+.c.br{bottom:-1px;right:-1px;border-bottom-width:1px;border-right-width:1px;--dx:12px;--dy:12px}
+@keyframes acquire{0%{transform:translate(var(--dx),var(--dy));opacity:0}35%{opacity:1}48%{opacity:.2}62%{opacity:1}100%{transform:none;opacity:1}}
+.acq>.c{animation:acquire .75s var(--ease) both}
+
+/* ---------- écran titre ---------- */
+.title{position:fixed;inset:0;z-index:3;display:grid;place-items:center;text-align:center;transition:opacity .7s var(--ease),transform .9s var(--ease)}
+.title .box{position:relative;padding:18px 34px 10px}
+.title .tag{position:absolute;top:-22px;left:0;right:0;display:flex;justify-content:space-between}
+.word{margin:0;font-family:var(--f-display);font-weight:900;font-stretch:125%;font-size:clamp(64px,13vw,184px);line-height:.86;letter-spacing:-.035em;white-space:nowrap}
+.word span{display:inline-block;opacity:0;transform:translateY(.32em) skewY(6deg);animation:rise .9s var(--ease) forwards;animation-delay:calc(var(--i) * 55ms + .15s)}
+@keyframes rise{to{opacity:1;transform:none}}
+.sub{margin:18px 0 0;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fade .8s .8s var(--ease) forwards}
+.press{margin-top:46px;opacity:0;animation:fade .8s 1.2s var(--ease) forwards}
+.press b{display:inline-block;animation:blink 1.6s 2s steps(2) infinite;font-weight:500}
+@keyframes fade{to{opacity:1}}
+@keyframes blink{50%{opacity:.25}}
+.dots{display:flex;gap:10px;justify-content:center;margin-top:26px;opacity:0;animation:fade .8s 1s var(--ease) forwards}
+.dots i{width:10px;height:10px;border-radius:2px}
+body.in .title{opacity:0;transform:translateY(-6vh) scale(.94);pointer-events:none}
+
+/* ---------- launcher ---------- */
+.launch{position:fixed;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:center;overflow-y:auto;padding:64px max(24px,4vw) 22px;gap:24px;opacity:0;pointer-events:none;transition:opacity .5s var(--ease)}
+body.in .launch{opacity:1;pointer-events:auto}
+.lh{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap}
+.lh h1{margin:0;font-family:var(--f-display);font-weight:900;font-stretch:125%;font-size:clamp(34px,4.4vw,56px);line-height:.9;letter-spacing:-.03em}
+.lh p{margin:0;max-width:44ch;color:var(--muted);font-size:14.5px;line-height:1.5}
+.lh .sp{flex:1}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(330px,auto);gap:14px}
+@media (max-width:980px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(280px,auto)}.launch{justify-content:flex-start}}
+@media (max-width:560px){.grid{grid-template-columns:1fr}}
+.card{--c:#fff;position:relative;appearance:none;font:inherit;color:inherit;text-align:left;cursor:pointer;border:1px solid var(--line);background:
+  radial-gradient(420px circle at var(--mx,50%) var(--my,30%),color-mix(in srgb,var(--c) 22%,transparent),transparent 62%),rgba(18,18,21,.72);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:22px 20px 18px;display:flex;flex-direction:column;gap:12px;min-height:0;
+  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(var(--ty,26px));opacity:0;
+  transition:transform .45s var(--ease),border-color .3s var(--ease),opacity .6s var(--ease),background .3s}
+body.in .card{--ty:0px;opacity:1;transition-delay:calc(var(--i) * 70ms + .15s),0s,calc(var(--i) * 70ms + .15s),0s}
+body.in .card.ready{transition-delay:0s}
+.card:hover,.card:focus-visible,.card.hot{border-color:color-mix(in srgb,var(--c) 70%,transparent);outline:none}
+.card .c{border-color:var(--c);opacity:0}
+.card:hover .c,.card:focus-visible .c,.card.hot .c{animation:acquire .6s var(--ease) both}
+.card .ic{width:76px;height:76px;filter:drop-shadow(0 10px 24px color-mix(in srgb,var(--c) 40%,transparent));transition:transform .5s var(--ease)}
+.card:hover .ic{transform:translateY(-3px) rotate(-3deg)}
+.card .ic svg{width:100%;height:100%}
+.card .k{position:absolute;top:16px;right:16px;display:flex;gap:8px;align-items:center}
+.card .k kbd{font:500 11px/1 var(--f-mono);border:1px solid var(--line2);padding:4px 6px;color:var(--muted)}
+.card h2{margin:6px 0 0;font-family:var(--f-display);font-weight:800;font-stretch:118%;font-size:26px;letter-spacing:-.02em;line-height:1}
+.card p{margin:0;color:var(--muted);font-size:14px;line-height:1.45}
+.card .meta{margin-top:auto;display:flex;flex-wrap:wrap;gap:6px}
+.card .meta i{font-style:normal;font:500 10.5px/1 var(--f-mono);letter-spacing:.04em;padding:5px 6px;border:1px solid var(--line);color:var(--muted)}
+.card .go{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;font:500 13px/1 var(--f-body)}
+.card .go b{font-weight:600;color:color-mix(in srgb,var(--c) 62%,#fff)}
+.card .go s{text-decoration:none;font-family:var(--f-mono);font-size:11px;color:var(--muted);transition:transform .3s var(--ease)}
+.card:hover .go s{transform:translateX(4px);color:var(--fg)}
+.card.launching{animation:launch .7s var(--ease)}
+@keyframes launch{30%{transform:perspective(900px) scale(.97)}100%{transform:none}}
+.foot{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+body.touch .foot,body.touch .card .k,body.touch #ro{display:none}
+body.touch .top{padding-top:env(safe-area-inset-top,0px);height:calc(44px + env(safe-area-inset-top,0px))}
+body.touch .launch{padding-top:calc(54px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+@media (max-width:560px){.grid{grid-auto-rows:auto}.card{min-height:0;padding:18px 16px 14px;flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px 14px}.card .ic{width:58px;height:58px}.card h2{margin:0;font-size:22px;flex:1}.card p{flex-basis:100%}.card .meta,.card .go{display:none}.lh h1{font-size:30px}}
+.foot .sp{flex:1}
+/* dépôt de fichier */
+.drop{position:fixed;inset:12px;z-index:8;border:1px dashed var(--line2);display:grid;place-items:center;background:rgba(11,11,13,.6);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .25s}
+body.dragging .drop{opacity:1}
+.drop div{text-align:center}
+.drop b{display:block;font-family:var(--f-display);font-weight:800;font-stretch:118%;font-size:30px;margin-bottom:8px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,12px);z-index:9;background:var(--fg);color:var(--bg);font:500 12px/1.3 var(--f-mono);padding:9px 12px;opacity:0;transition:all .35s var(--ease);pointer-events:none;max-width:calc(100% - 32px)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+:focus-visible{outline:1px solid var(--fg);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;animation-delay:0s!important}}
+</style>
+
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="drag"></div>
+<header class="top"><span class="mono" id="clock">Ateliers · 2 outils</span><span class="sp"></span><span class="mono dim" id="ro">sur cet appareil · hors ligne</span></header>
+
+<section class="title" id="title" aria-label="Écran titre">
+  <div>
+    <div class="box acq">
+      <div class="tag mono dim"><span>Suite locale</span><span>v1 · 2026</span></div>
+      <h1 class="word" id="word">Ateliers</h1>
+      <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    </div>
+    <div class="dots"><i style="background:var(--pdf)"></i><i style="background:var(--mill)"></i></div>
+    <div class="sub mono dim"><span>PDF</span><span>Médias</span><span>Vidéos de paroles</span><span>Pixel art</span></div>
+    <div class="press mono"><b>Appuyez sur une touche</b> <span class="dim">ou cliquez pour entrer</span></div>
+  </div>
+</section>
+
+<main class="launch" id="launch" aria-label="Choisir un outil">
+  <div class="lh">
+    <h1>Que fait-on aujourd'hui&nbsp;?</h1>
+    <span class="sp"></span>
+    <p>Tout se passe sur cet ordinateur : aucun compte, aucun envoi. Déposez un fichier n'importe où, il s'ouvre dans le bon outil.</p>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="foot mono dim"><span>1 – 2 : ouvrir</span><span>Échap : écran titre</span><span>Glisser-déposer : ouvrir un fichier</span><span class="sp"></span><span id="ver"></span></div>
+</main>
+
+<div class="drop" aria-hidden="true"><div><b>Déposez le fichier</b><span class="mono dim">PDF, photo, son, vidéo… il part dans le bon outil</span></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const APPS = [
+  { k: "pdf", name: "IdontlovePDF", d: "Fusionner, signer, scanner, reconnaître le texte : 28 outils PDF.", meta: ["PDF", "Scan", "OCR", "Word"] },
+  { k: "mill", name: "Moulinette", d: "Convertir, compresser et couper vidéos, sons et photos.", meta: ["MP4", "MP3", "GIF", "HEIC"] },
+];
+const COL = { pdf: "#e5484d", mill: "#2b3dff", lyric: "#ff5a1f", pixel: "#e8b04a" };
+const native = window.suiteNative;
+if (/Mac/.test(navigator.platform) && native) document.body.classList.add("mac");
+const touch = matchMedia("(pointer:coarse)").matches;
+if (touch) { document.body.classList.add("touch"); document.querySelector(".press").innerHTML = "<b>Touchez l'écran</b> <span class=\"dim\">pour entrer</span>"; document.querySelector(".lh p").textContent = "Tout se passe sur cet appareil : aucun compte, aucun envoi."; }
+$("#ver").textContent = native?.version ? "Version " + native.version : "";
+let toastT; const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 3200); };
+
+/* titre : lettres animées une à une */
+const w = $("#word"); w.innerHTML = [...w.textContent].map((ch, i) => `<span style="--i:${i}">${ch}</span>`).join("");
+
+/* cartes */
+$("#grid").innerHTML = APPS.map((a, i) => `<button class="card" data-k="${a.k}" style="--c:${COL[a.k]};--i:${i}">
+  <span class="k"><kbd>${i + 1}</kbd></span><span class="ic">${suiteIcon(a.k, { size: 76 })}</span>
+  <h2>${a.name}</h2><p>${a.d}</p><span class="meta">${a.meta.map(m => `<i>${m}</i>`).join("")}</span>
+  <span class="go"><b>Ouvrir</b><s>→</s></span><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i></button>`).join("");
+setTimeout(() => document.querySelectorAll(".card").forEach(c => c.classList.add("ready")), 1400);
+
+let entered = false;
+const enter = () => { if (entered) return; entered = true; document.body.classList.add("in"); setTimeout(() => $(".card")?.focus({ preventScroll: true }), 500); };
+const leave = () => { entered = false; document.body.classList.remove("in"); };
+async function open(k, file){
+  const card = document.querySelector(`.card[data-k="${k}"]`); card?.classList.remove("launching"); void card?.offsetWidth; card?.classList.add("launching");
+  burst(k);
+  if (native) { try { await native.open(k, file); } catch (e) { toast("Cet outil n'a pas pu s'ouvrir."); } }
+  else if (window.Capacitor?.isNativePlatform?.()) setTimeout(() => { location.href = `${k}/index.html`; }, 220);
+  else window.open(`${k}/index.html`, "_blank");
+}
+$("#title").addEventListener("click", enter);
+addEventListener("keydown", e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (!entered) { enter(); e.preventDefault(); return; }
+  if (e.key === "Escape") return leave();
+  const n = +e.key; if (n >= 1 && n <= 4) open(APPS[n - 1].k);
+  if (["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"].includes(e.key)) { const cs = [...document.querySelectorAll(".card")], i = cs.indexOf(document.activeElement), d = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1; cs[(i + d + cs.length) % cs.length].focus(); e.preventDefault(); }
+});
+$("#grid").addEventListener("click", e => { const c = e.target.closest(".card"); if (c) open(c.dataset.k); });
+/* inclinaison + reflet qui suit la souris */
+$("#grid").addEventListener("pointermove", e => { const c = e.target.closest(".card"); if (!c) return; const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  c.style.setProperty("--mx", x * 100 + "%"); c.style.setProperty("--my", y * 100 + "%"); c.style.setProperty("--rx", (.5 - y) * 6 + "deg"); c.style.setProperty("--ry", (x - .5) * 8 + "deg"); });
+$("#grid").addEventListener("pointerout", e => { const c = e.target.closest(".card"); if (c && !c.contains(e.relatedTarget)) { c.style.setProperty("--rx", "0deg"); c.style.setProperty("--ry", "0deg"); } });
+
+/* glisser-déposer : le fichier part dans le bon outil */
+async function route(f){
+  const { kind, fam } = await FI.familyOf(f);
+  if (fam === "pdf") return "pdf";
+  if (fam === "audio") return "mill";
+  if (fam === "video") return "mill";
+  if (fam === "image") return "pdf";
+  return null;
+}
+FI.onDrop(async files => {
+  enter(); const f = files[0], k = await route(f);
+  if (!k) return toast(`« ${f.name} » : aucun outil ne prend ce format.`);
+  const card = document.querySelector(`.card[data-k="${k}"]`); card.classList.add("hot"); setTimeout(() => card.classList.remove("hot"), 1200);
+  toast(`${f.name} → ${APPS.find(a => a.k === k).name}`);
+  open(k, native ? native.pathFor?.(f) || f : f);
+});
+
+/* ---------- champ interactif : nappes de couleur suivies, cadres de visée, ligne de scan ---------- */
+const cv = $("#field"), g = cv.getContext("2d"); let W = 0, H = 0, dpr = 1;
+const resize = () => { dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); };
+resize(); addEventListener("resize", resize);
+const blobs = APPS.map((a, i) => ({ k: a.k, name: a.name, c: COL[a.k], x: .33 + i * .34, y: .5, vx: 0, vy: 0, sx: .05 + Math.random() * .05, sy: .04 + Math.random() * .05, px: Math.random() * 6.3, py: Math.random() * 6.3, r: 0, pulse: 0 }));
+const mouse = { x: .5, y: .5, on: false };
+addEventListener("pointermove", e => { mouse.x = e.clientX / W; mouse.y = e.clientY / H; mouse.on = true; });
+addEventListener("pointerleave", () => mouse.on = false);
+function burst(k){ const b = blobs.find(b => b.k === k); if (b) b.pulse = 1; }
+const hex = (h, a) => { const n = parseInt(h.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+let t0 = performance.now(), scan = 0;
+function frame(now){
+  const t = (now - t0) / 1000; g.clearRect(0, 0, W, H);
+  const calm = entered ? .55 : 1, R = Math.min(W, H) * (entered ? .32 : .42);
+  for (const b of blobs) {
+    // dérive lente + attirance douce vers la souris (et vers la carte survolée)
+    let tx = .5 + Math.sin(t * b.sx + b.px) * .34, ty = .5 + Math.cos(t * b.sy + b.py) * .28;
+    const hot = document.querySelector(`.card[data-k="${b.k}"]:hover, .card[data-k="${b.k}"]:focus-visible, .card[data-k="${b.k}"].hot`);
+    if (hot) { const r = hot.getBoundingClientRect(); tx = (r.left + r.width / 2) / W; ty = (r.top + r.height / 3) / H; }
+    else if (mouse.on) { const dx = mouse.x - tx, dy = mouse.y - ty, d = Math.hypot(dx, dy); tx += dx * .25 * Math.exp(-d * 3); ty += dy * .25 * Math.exp(-d * 3); }
+    b.vx += (tx - b.x) * .012; b.vy += (ty - b.y) * .012; b.vx *= .9; b.vy *= .9; b.x += b.vx; b.y += b.vy;
+    b.pulse *= .94; const x = b.x * W, y = b.y * H, rr = R * (1 + b.pulse * .5);
+    const gr = g.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, hex(b.c, .42 * calm + b.pulse * .3)); gr.addColorStop(1, hex(b.c, 0));
+    g.globalCompositeOperation = "screen"; g.fillStyle = gr; g.beginPath(); g.arc(x, y, rr, 0, 7); g.fill();
+  }
+  g.globalCompositeOperation = "source-over";
+  // liaisons + cadres de visée + étiquettes (comme un suivi d'objets)
+  g.lineWidth = 1; g.strokeStyle = "rgba(242,241,236,.12)"; g.beginPath();
+  blobs.forEach((b, i) => { const n = blobs[(i + 1) % blobs.length]; g.moveTo(b.x * W, b.y * H); g.lineTo(n.x * W, n.y * H); }); g.stroke();
+  g.font = "500 10px 'IBM Plex Mono',ui-monospace,monospace"; g.textBaseline = "top";
+  blobs.forEach((b, i) => {
+    const x = b.x * W, y = b.y * H, s = 26 + b.pulse * 30, l = 8, near = mouse.on && Math.hypot(mouse.x - b.x, (mouse.y - b.y) * H / W) < .12;
+    g.strokeStyle = near || b.pulse > .1 ? b.c : "rgba(242,241,236,.55)"; g.beginPath();
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sy]) => { g.moveTo(x + sx * s, y + sy * (s - l)); g.lineTo(x + sx * s, y + sy * s); g.lineTo(x + sx * (s - l), y + sy * s); });
+    g.stroke(); g.fillStyle = near ? b.c : "rgba(242,241,236,.6)";
+    if (near || b.pulse > .1) g.fillText(`#0${i + 1} ${b.name.toUpperCase()}  ${b.x.toFixed(3)} ${b.y.toFixed(3)}`, x + s + 6, y - s);
+  });
+  // curseur suivi
+  if (mouse.on) { const x = mouse.x * W, y = mouse.y * H; g.strokeStyle = "rgba(242,241,236,.4)"; g.beginPath(); g.moveTo(x - 9, y); g.lineTo(x - 3, y); g.moveTo(x + 3, y); g.lineTo(x + 9, y); g.moveTo(x, y - 9); g.lineTo(x, y - 3); g.moveTo(x, y + 3); g.lineTo(x, y + 9); g.stroke(); }
+  // ligne de scan + grain
+  scan = (scan + (entered ? .6 : 1.4)) % (H + 80); const sg = g.createLinearGradient(0, scan - 140, 0, scan); sg.addColorStop(0, "rgba(242,241,236,0)"); sg.addColorStop(1, "rgba(242,241,236,.035)"); g.fillStyle = sg; g.fillRect(0, scan - 140, W, 140);
+  g.fillStyle = "rgba(242,241,236,.08)"; g.fillRect(0, scan, W, 1);
+  $("#ro").textContent = mouse.on ? `x ${mouse.x.toFixed(3)} · y ${mouse.y.toFixed(3)}` : "sur cet appareil · hors ligne";
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+const clock = () => { const d = new Date(); $("#clock").textContent = document.body.classList.contains("touch") ? `Ateliers · ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}` : `Ateliers · ${d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} · ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`; };
+clock(); setInterval(clock, 15000);
+if (native?.skipTitle) enter();
+})();
+</script>
+
+</body>
+</html>

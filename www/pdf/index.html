@@ -1,0 +1,164 @@
+<!doctype html>
+  <html lang="fr">
+  <head>
+<script>window.SUITE_LIB_BASE="../lib/";window.SUITE_APP="pdf";</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="idlp-pwa" content="1">
+  <meta name="theme-color" content="#e5484d">
+  <meta name="description" content="Tous vos outils PDF, sans rien envoyer en ligne.">
+  <title>IdontlovePDF Pro</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="../fonts/pdf.css">
+  <link rel="stylesheet" href="style.css">
+  <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);height:100%}body{font-size:14px}img{max-width:100%}</style>
+  <script src="lib/pdf-lib.min.js"></script>
+  <script type="module">
+  import * as pdfjs from "./lib/pdf.min.mjs";
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL("./lib/pdf.worker.min.mjs", import.meta.url).href;
+  window.pdfjsLib = pdfjs; window.dispatchEvent(new Event("pdfjsready"));
+  </script>
+  </head>
+  <body>
+  <div id="app">
+  <section id="vHome" class="view">
+    <header class="hbar gut">
+      <div class="brand"><span class="slogo" data-suite-logo="pdf"></span><span><span class="w1">Idontlove</span><span class="w2">PDF</span></span></div>
+      <span class="sp"></span>
+      <button class="btn line sm" id="btnInstall" hidden><span data-icon="install"></span>Installer l'app</button>
+    </header>
+    <div class="scroll">
+      <div class="home gut">
+        <div class="hero">
+          <h1>Tous vos outils PDF. <span>Sans rien envoyer en ligne.</span></h1>
+          <p>Fusionner, diviser, compresser, signer, convertir. Vos fichiers restent sur votre appareil, du début à la fin.</p>
+        </div>
+        <div class="resume" id="resume" hidden></div>
+        <div class="chips" id="chips"></div>
+        <div class="tgrid" id="tgrid"></div>
+        <p class="hfoot">IdontlovePDF fonctionne aussi hors ligne une fois installée.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="vLand" class="view" hidden>
+    <header class="hbar gut">
+      <button class="back" id="landBack"><span data-icon="back"></span>Tous les outils</button>
+      <span class="sp"></span>
+      <div class="brand"><span class="slogo" data-suite-logo="pdf"></span></div>
+    </header>
+    <div class="scroll"><div class="land gut" id="land"></div></div>
+  </section>
+
+  <section id="vWork" class="view" hidden>
+    <header class="wbar gut">
+      <span class="logo" id="goHome" role="button" tabindex="0" title="Accueil" data-icon="logo"></span>
+      <input class="docname" id="docName" aria-label="Nom du document" autocomplete="off" spellcheck="false">
+      <span class="sp"></span>
+      <div class="seg" id="viewSeg">
+        <button data-view="grid"><span data-icon="organize"></span><span>Pages</span></button>
+        <button data-view="edit"><span data-icon="pen"></span><span>Éditer</span></button>
+      </div>
+      <button class="ib" id="btnUndo" title="Annuler (Ctrl+Z)" aria-label="Annuler" data-icon="undo" disabled></button>
+      <button class="ib" id="btnRedo" title="Rétablir (Ctrl+Maj+Z)" aria-label="Rétablir" data-icon="redo" disabled></button>
+      <button class="btn line sm" id="btnTools"><span data-icon="apps"></span><span class="lbl">Outils</span></button>
+    </header>
+    <div class="wmain">
+      <div class="wcol">
+        <div class="gridview" id="gridView">
+          <div class="selbar gut" id="selbar"></div>
+          <div class="pgrid" id="pgrid"></div>
+        </div>
+        <div class="editview" id="editView" hidden>
+          <nav class="etools gut" id="etools" aria-label="Outils d'édition"></nav>
+          <div class="props gut" id="props"></div>
+          <div class="ework">
+            <aside class="strip" id="strip"></aside>
+            <div class="stage-wrap">
+              <main class="stage" id="stage">
+                <div class="frame" id="frame"><div class="sheet" id="sheet" data-tool="select"><canvas class="base"></canvas></div><canvas class="stampl" id="stampl"></canvas></div>
+              </main>
+              <div class="zoom" id="zoom">
+                <button data-z="-" title="Dézoomer" aria-label="Dézoomer" data-icon="minus"></button>
+                <button class="pct" data-z="fit" title="Ajuster" id="zpct">100 %</button>
+                <button data-z="+" title="Zoomer" aria-label="Zoomer" data-icon="plus"></button>
+              </div>
+              <div class="pager" id="pager">
+                <button data-pg="-1" aria-label="Page précédente" data-icon="back"></button>
+                <span class="pp" id="ppLabel">1 / 1</span>
+                <button data-pg="1" aria-label="Page suivante" data-icon="next"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="panel" id="panel">
+        <div class="phead" id="phead"></div>
+        <div class="pbody" id="pbody"></div>
+        <div class="pfoot">
+          <div class="pchips" id="pchips"></div>
+          <div class="prog" id="prog" hidden><i></i></div>
+          <div class="prow">
+            <button class="btn line popt" id="pToggle"><span data-icon="sliders"></span>Réglages</button>
+            <button class="btn primary big" id="pGo"></button>
+          </div>
+          <p class="pstat" id="pstat"></p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</div>
+
+<input type="file" id="fileIn" multiple hidden>
+<input type="file" id="imgIn" accept="image/*" hidden>
+<input type="file" id="wmIn" accept="image/*" hidden>
+
+<div class="modal" id="mTools" hidden>
+  <div class="dialog wide" role="dialog" aria-labelledby="mtT">
+    <div class="dhead"><h2 id="mtT">Changer d'outil</h2><button class="ib" data-close aria-label="Fermer" data-icon="x"></button></div>
+    <p>Le document en cours est conservé.</p>
+    <div class="tgrid" id="mtGrid"></div>
+  </div>
+</div>
+
+<div class="modal" id="mSign" hidden>
+  <div class="dialog" role="dialog" aria-labelledby="sgT">
+    <h2 id="sgT">Votre signature</h2>
+    <p>Signez dans le cadre avec le doigt, un stylet ou la souris.</p>
+    <canvas class="sigpad" id="sigpad"></canvas>
+    <div class="sig-tools">
+      <div class="sws" id="sigColors"></div>
+      <label class="check"><input type="checkbox" id="sigKeep" checked> Mémoriser</label>
+      <button class="btn ghost sm" id="sigClear">Effacer</button>
+    </div>
+    <div class="row"><button class="btn ghost" data-close>Annuler</button><button class="btn primary" id="sigOk">Ajouter à la page</button></div>
+  </div>
+</div>
+
+<div class="modal" id="mPass" hidden>
+  <div class="dialog" role="dialog" aria-labelledby="pwT">
+    <h2 id="pwT">PDF protégé</h2>
+    <p id="pwM"></p>
+    <input class="input" type="password" id="pwIn" autocomplete="off" placeholder="Mot de passe">
+    <p class="err" id="pwErr"></p>
+    <div class="row"><button class="btn ghost" id="pwCancel">Ignorer ce fichier</button><button class="btn primary" id="pwOk">Ouvrir</button></div>
+  </div>
+</div>
+
+<div class="modal" id="mChoose" hidden>
+  <div class="dialog" role="dialog" aria-labelledby="chT">
+    <h2 id="chT"></h2>
+    <p id="chM"></p>
+    <div class="row" id="chB"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+  <script src="app.js"></script>
+  <script src="../brand-global.js"></script><script src="../splash.js"></script><script src="../android-bridge.js"></script>
+</body>
+  </html>
+  

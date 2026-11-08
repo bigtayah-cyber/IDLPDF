@@ -1,0 +1,17 @@
+{
+  "appId": "fr.ateliers.duo",
+  "appName": "Ateliers Duo",
+  "webDir": "www",
+  "backgroundColor": "#0b0b0d",
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0b0b0d"
+  },
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "capacitor"
+  }
+}
